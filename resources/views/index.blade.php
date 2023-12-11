@@ -24,7 +24,7 @@
 
                     <div class="mb-3">
                         <label for="formFile" class="form-label">Gambar Produk</label>
-                        <input class="form-control" name="image" type="file" id="formFile">
+                        <input class="form-control" value="{{ old('image') }}" name="image" type="file" id="formFile">
                         @error('image')
                             <div class="alert alert-danger mt-2">
                                 {{ $message }}
@@ -34,7 +34,7 @@
 
                     <div class="mb-3">
                         <label for="name" class="form-label">Nama Produk</label>
-                        <input type="text" name="name" class="form-control" id="name"
+                        <input type="text" value="{{ old('name') }}" name="name" class="form-control" id="name"
                             placeholder="Nama Produk">
                         @error('name')
                             <div class="alert alert-danger mt-2">
@@ -45,7 +45,7 @@
 
                     <div class="mb-3">
                         <label for="stock" class="form-label">Stok Produk</label>
-                        <input type="text" name="stock" class="form-control" id="stock"
+                        <input type="text" value="{{ old('stock') }}" name="stock" class="form-control" id="stock"
                             placeholder="Stok Produk">
                         @error('stock')
                             <div class="alert alert-danger mt-2">
@@ -58,6 +58,11 @@
                         <label for="categoryDropdown" class="form-label">Kategori</label>
                         <select name="category_id" class="form-select" id="categoryDropdown">
                             <option value="" selected>Pilih Kategori</option>
+                            @foreach($categories as $category)
+                                <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
+                                    {{ $category->name }}
+                                </option>
+                            @endforeach
                         </select>
                         @error('category_id')
                             <div class="alert alert-danger mt-2">
