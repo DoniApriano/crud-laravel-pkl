@@ -18,12 +18,15 @@
         <h1 class="text-center m-3">Crud Laravel</h1>
         <hr>
         <div class="row">
-            <div class="col-md-4">
+            <div class="">
                 <form action="{{ route('products.update', $product->id) }}" method="post"
                     enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
 
+                    <div class="text-center">
+                        <img src="{{ asset('storage/products/' . $product->image) }}" alt="" srcset="">
+                    </div>
                     <div class="mb-3">
                         <label for="formFile" class="form-label">Gambar Produk</label>
                         <input class="form-control" name="image" type="file" id="formFile">
