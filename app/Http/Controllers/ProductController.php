@@ -35,7 +35,7 @@ class ProductController extends Controller
             'category_id'   => $request->category_id,
         ]);
 
-        return redirect()->route('products.index');
+        return redirect()->route('products.index')->with('success','Berhasil tambah produk');
     }
 
     public function update(Request $request, $id)
@@ -66,7 +66,7 @@ class ProductController extends Controller
             ]);
         }
 
-        return redirect()->route('products.index');
+        return redirect()->route('products.index')->with('success','Berhasil update data');
     }
 
     public function edit($id)

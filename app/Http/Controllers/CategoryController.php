@@ -9,9 +9,8 @@ class CategoryController extends Controller
 {
     public function getAllCategories(Request $request)
     {
-        $term = $request->input('term'); // The user's input
-
-        $categories = Category::where('name', 'LIKE', "%$term%")->get();
+        $term = strtolower($request->input('term'));
+        $categories = Category::whereRaw('LOWER(name) LIKE ?', ["%$term%"])->get();
 
         $data = [];
 

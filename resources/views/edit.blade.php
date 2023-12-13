@@ -18,15 +18,14 @@
         <h1 class="text-center m-3">Crud Laravel</h1>
         <hr>
         <div class="row">
-            <div class="">
-                <form action="{{ route('products.update', $product->id) }}" method="post"
-                    enctype="multipart/form-data">
+            <div class="text-center">
+                <img class="shadow rounded p-3" src="{{ asset('storage/products/' . $product->image) }}" alt="" srcset="">
+            </div>
+            <div class="shadow rounded pt-3 mt-3 mb-3">
+                <form action="{{ route('products.update', $product->id) }}" method="post" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
 
-                    <div class="text-center">
-                        <img src="{{ asset('storage/products/' . $product->image) }}" alt="" srcset="">
-                    </div>
                     <div class="mb-3">
                         <label for="formFile" class="form-label">Gambar Produk</label>
                         <input class="form-control" name="image" type="file" id="formFile">
@@ -39,8 +38,8 @@
 
                     <div class="mb-3">
                         <label for="name" class="form-label">Nama Produk</label>
-                        <input type="text" name="name" value="{{ old('name', $product->name) }}"
-                            class="form-control" id="name" placeholder="Nama Produk">
+                        <input type="text" name="name" value="{{ old('name', $product->name) }}" class="form-control"
+                            id="name" placeholder="Nama Produk">
                         @error('name')
                             <div class="alert alert-danger mt-2">
                                 {{ $message }}
@@ -80,7 +79,6 @@
                         <button type="submit" class="btn btn-success">Simpan</button>
                     </div>
                 </form>
-
             </div>
         </div>
     </div>

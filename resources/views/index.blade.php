@@ -10,21 +10,21 @@
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
 </head>
 
 <body>
     <div class="container">
         <h1 class="text-center m-3">Crud Laravel</h1>
         <hr>
-        <div class="row">
-            <div class="col-md-4">
+        <div class="row justify-content-center">
+            <div class=" shadow p-3 rounded-3 mb-3">
                 <form action="{{ route('products.store') }}" method="post" enctype="multipart/form-data">
                     @csrf
 
                     <div class="mb-3">
                         <label for="formFile" class="form-label">Gambar Produk</label>
-                        <input class="form-control" value="{{ old('image') }}" name="image" type="file" id="formFile">
+                        <input class="form-control" value="{{ old('image') }}" name="image" type="file"
+                            id="formFile">
                         @error('image')
                             <div class="alert alert-danger mt-2">
                                 {{ $message }}
@@ -34,8 +34,8 @@
 
                     <div class="mb-3">
                         <label for="name" class="form-label">Nama Produk</label>
-                        <input type="text" value="{{ old('name') }}" name="name" class="form-control" id="name"
-                            placeholder="Nama Produk">
+                        <input type="text" value="{{ old('name') }}" name="name" class="form-control"
+                            id="name" placeholder="Nama Produk">
                         @error('name')
                             <div class="alert alert-danger mt-2">
                                 {{ $message }}
@@ -45,8 +45,8 @@
 
                     <div class="mb-3">
                         <label for="stock" class="form-label">Stok Produk</label>
-                        <input type="text" value="{{ old('stock') }}" name="stock" class="form-control" id="stock"
-                            placeholder="Stok Produk">
+                        <input type="text" value="{{ old('stock') }}" name="stock" class="form-control"
+                            id="stock" placeholder="Stok Produk">
                         @error('stock')
                             <div class="alert alert-danger mt-2">
                                 {{ $message }}
@@ -58,8 +58,9 @@
                         <label for="categoryDropdown" class="form-label">Kategori</label>
                         <select name="category_id" class="form-select" id="categoryDropdown">
                             <option value="" selected>Pilih Kategori</option>
-                            @foreach($categories as $category)
-                                <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
+                            @foreach ($categories as $category)
+                                <option value="{{ $category->id }}"
+                                    {{ old('category_id') == $category->id ? 'selected' : '' }}>
                                     {{ $category->name }}
                                 </option>
                             @endforeach
@@ -77,7 +78,7 @@
                 </form>
 
             </div>
-            <div class="col-md-8">
+            <div class=" shadow p-3 rounded-3">
                 <div class="table-responsive">
                     <table class="table">
                         <thead>
@@ -101,10 +102,10 @@
                                         <form onsubmit="return confirm('Yakin?')"
                                             action="{{ route('products.destroy', $p->id) }}" method="post">
                                             <a href="{{ route('products.edit', $p->id) }}"
-                                                class="btn btn-success">Edit</a>
+                                                class="btn btn-success">Ubah</a>
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-danger">Delete</button>
+                                            <button type="submit" class="btn btn-danger">Hapus</button>
                                         </form>
                                     </td>
                                 </tr>
@@ -124,9 +125,8 @@
         $(document).ready(function() {
             $('#categoryDropdown').select2({
                 placeholder: 'Pilih Kategori',
-                theme: 'form-select',
                 ajax: {
-                    url: '/getAllCategories',
+                    url: '{{ route('getAllCategories') }}',
                     dataType: 'json',
                     delay: 250,
                     processResults: function(data) {
@@ -139,6 +139,7 @@
             });
         });
     </script>
+
 
 </body>
 
