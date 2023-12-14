@@ -12,7 +12,7 @@
 
 <body>
     <div class="container mt-5">
-        <div id="map" style="height: 400px;"></div>
+        <div id="map" style="height: 600px;"></div>
     </div>
 
     <script src="{{ asset('leaflet/leaflet.js') }}"></script>

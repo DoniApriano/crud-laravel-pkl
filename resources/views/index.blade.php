@@ -10,6 +10,9 @@
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+    <link href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css" rel="stylesheet">
 </head>
 
 <body>
@@ -24,7 +27,7 @@
                     <div class="mb-3">
                         <label for="formFile" class="form-label">Gambar Produk</label>
                         <input class="form-control" value="{{ old('image') }}" name="image" type="file"
-                            id="formFile">
+                            accept="image/*" id="formFile">
                         @error('image')
                             <div class="alert alert-danger mt-2">
                                 {{ $message }}
@@ -46,7 +49,8 @@
                     <div class="mb-3">
                         <label for="stock" class="form-label">Stok Produk</label>
                         <input type="text" value="{{ old('stock') }}" name="stock" class="form-control"
-                            id="stock" placeholder="Stok Produk">
+                            pattern="[0-9]+" title="Harus berupa angka" id="stock" placeholder="Stok Produk"
+                            oninput="this.value = this.value.replace(/[^0-9]/g, '');">
                         @error('stock')
                             <div class="alert alert-danger mt-2">
                                 {{ $message }}
@@ -79,44 +83,18 @@
 
             </div>
             <div class=" shadow p-3 rounded-3">
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th scope="col">Gambar</th>
-                                <th scope="col">Nama</th>
-                                <th scope="col">Jumlah</th>
-                                <th scope="col">Kategori</th>
-                                <th scope="col">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($products as $p)
-                                <tr>
-                                    <td><img src="{{ asset('storage/products/' . $p['image']) }}" alt=""
-                                            srcset=""></td>
-                                    <td>{{ $p['name'] }}</td>
-                                    <td>{{ $p['stock'] }}</td>
-                                    <td>{{ $p['category']['name'] }}</td>
-                                    <td class="text-center">
-                                        <form onsubmit="return confirm('Yakin?')"
-                                            action="{{ route('products.destroy', $p->id) }}" method="post">
-                                            <a href="{{ route('products.edit', $p->id) }}"
-                                                class="btn btn-success">Ubah</a>
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger">Hapus</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            @empty
-                                <div class="bg-danger text-center rounded-3">
-                                    <h3 class="text-white">Tidak ada produk</h3>
-                                </div>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+                <table id="tbl_list" class="table table-striped table-bordered" cellspacing="0" width="100%">
+                    <thead>
+                        <tr>
+                            <th>Gambar</th>
+                            <th>Nama</th>
+                            <th>Jumlah</th>
+                            <th>Kategori</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -136,6 +114,38 @@
                     },
                     cache: true
                 }
+            });
+        });
+    </script>
+
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('#tbl_list').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: '{{ route('products.index') }}',
+                columns: [{
+                        data: 'image',
+                        name: 'image',
+                        render: function(data, type, full, meta) {
+                            return '<img src="' + `/storage/products/${data}` +
+                                '" alt="Product Image" width="100">';
+                        }
+                    },
+                    {
+                        data: 'name',
+                        name: 'name'
+                    },
+                    {
+                        data: 'stock',
+                        name: 'stock'
+                    },
+                    {
+                        data: 'category_name',
+                        name: 'category_name'
+                    },
+                ]
             });
         });
     </script>

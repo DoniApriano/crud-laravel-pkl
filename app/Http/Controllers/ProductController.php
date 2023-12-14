@@ -6,14 +6,23 @@ use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Yajra\DataTables\Facades\DataTables;
 
 class ProductController extends Controller
 {
     public function index()
     {
-        $products = Product::get();
+        // $products = Product::get();
         $categories = Category::get();
-        return view('index', compact(['products', 'categories']));
+        if (request()->ajax()) {
+            $products = Product::with('category')->get();
+            return DataTables::of($products)
+                ->addColumn('category_name', function ($product) {
+                    return $product->category->name;
+                })
+                ->make(true);
+        }
+        return view('index', compact(['categories']));
     }
 
     public function store(Request $request)
@@ -35,7 +44,7 @@ class ProductController extends Controller
             'category_id'   => $request->category_id,
         ]);
 
-        return redirect()->route('products.index')->with('success','Berhasil tambah produk');
+        return redirect()->route('products.index')->with('success', 'Berhasil tambah produk');
     }
 
     public function update(Request $request, $id)
@@ -66,7 +75,7 @@ class ProductController extends Controller
             ]);
         }
 
-        return redirect()->route('products.index')->with('success','Berhasil update data');
+        return redirect()->route('products.index')->with('success', 'Berhasil update data');
     }
 
     public function edit($id)

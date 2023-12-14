@@ -72,13 +72,12 @@
                                 <td>{{ $location->longitude }}</td>
                                 <td>
                                     <div id="map_{{ $location->id }}" class="minimap"
-                                        style="height: 400px; width: 400px;"></div>
+                                        style="height: 200px; width: 200px;"></div>
                                     <script>
                                         var map_{{ $location->id }} = L.map('map_{{ $location->id }}').setView([{{ $location->latitude }},
                                             {{ $location->longitude }}
                                         ], 20);
                                         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                                            attribution: '© OpenStreetMap contributors'
                                         }).addTo(map_{{ $location->id }});
                                         L.marker([{{ $location->latitude }}, {{ $location->longitude }}]).addTo(map_{{ $location->id }});
                                     </script>
@@ -97,7 +96,6 @@
         var mymap = L.map('map').setView([-7.554749321826491, 110.80869023600576], 20);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
         }).addTo(mymap);
 
         // Menambahkan kontrol Leaflet Draw
@@ -120,21 +118,27 @@
         mymap.addControl(drawControl);
 
         mymap.on('draw:created', function(e) {
+            drawnItems.clearLayers();
+
             var layer = e.layer;
             var coords;
+            var array = []
 
             if (layer instanceof L.Polygon || layer instanceof L.Polyline) {
-                coords = layer.getLatLngs()[0];
+                coords = layer.getLatLngs()[0]
+                alert(JSON.stringify(coords))
+                console.log('poly',coords)
             } else if (layer instanceof L.Marker || layer instanceof L.Circle || layer instanceof L.Rectangle) {
+                coords = layer.getLatLng()
+                array.push(coords)
+                console.log('oth',coords)
+                console.log('array = ',array)
+                alert(JSON.stringify(array))
                 document.getElementById('latitude').value = layer.getLatLng().lat;
                 document.getElementById('longitude').value = layer.getLatLng().lng;
-                coords = layer.getLatLng();
             }
 
             drawnItems.addLayer(layer);
-
-            console.log('Drawn:', coords);
-
         });
 
     </script>
