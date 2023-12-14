@@ -13,6 +13,7 @@
 
     <script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
     <link href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body>
@@ -83,13 +84,15 @@
 
             </div>
             <div class=" shadow p-3 rounded-3">
-                <table id="tbl_list" class="table table-striped table-bordered" cellspacing="0" width="100%">
+                <table id="tbl_list" class="table table-borderless" cellspacing="0" width="100%">
                     <thead>
                         <tr>
+                            <th>No</th>
                             <th>Gambar</th>
                             <th>Nama</th>
                             <th>Jumlah</th>
                             <th>Kategori</th>
+                            <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -119,13 +122,21 @@
     </script>
 
 
-    <script type="text/javascript">
+    <script>
         $(document).ready(function() {
             $('#tbl_list').DataTable({
                 processing: true,
                 serverSide: true,
                 ajax: '{{ route('products.index') }}',
                 columns: [{
+                        data: null,
+                        orderable: false,
+                        searchable: false,
+                        render: function(data, type, full, meta) {
+                            return meta.row + 1;
+                        }
+                    },
+                    {
                         data: 'image',
                         name: 'image',
                         render: function(data, type, full, meta) {
@@ -145,9 +156,66 @@
                         data: 'category_name',
                         name: 'category_name'
                     },
+                    {
+                        data: null,
+                        orderable: false,
+                        searchable: false,
+                        render: function(data, type, full, meta) {
+                            var editUrl = '{{ route('products.edit', ':id') }}'.replace(':id', full
+                                .id);
+                            var deleteUrl = '{{ route('products.destroy', ':id') }}'.replace(':id',
+                                full.id);
+
+                            return '<div class="row">' +
+                                '<div class="col-md-3">' +
+                                '<a href="' + editUrl +
+                                '" class="btn btn-success btn-edit m-1">Ubah</a>' +
+                                '</div>' +
+                                '<div class="col-md-3">' +
+                                '<form class="delete-form" onsubmit="confirmDelete(event)"' +
+                                ' action="' + deleteUrl + '" method="post">' +
+                                '@csrf' +
+                                '@method('DELETE')' +
+                                '<button type="submit" class="btn btn-danger m-1 btn-delete">Hapus</button>' +
+                                '</form>' +
+                                '</div>' +
+                                '</div>';
+
+                        }
+                    }
                 ]
             });
+
+            // Menangani peristiwa klik pada tombol "Ubah"
+            $('#tbl_list').on('click', '.btn-edit', function() {
+                // Logika untuk menangani peristiwa "Ubah" (jika diperlukan)
+                console.log('Ubah produk dengan ID:', $(this).data('id'));
+            });
+
+            // Menangani peristiwa klik pada tombol "Hapus"
+            $('#tbl_list').on('submit', '.delete-form', function() {
+                // Logika untuk menangani peristiwa "Hapus" (jika diperlukan)
+                console.log('Hapus produk dengan ID:', $(this).data('id'));
+            });
         });
+
+        function confirmDelete(event) {
+                event.preventDefault();
+                Swal.fire({
+                    title: 'Yakin?',
+                    text: 'Anda tidak dapat mengembalikan ini!',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Ya, hapus!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        event.target.submit();
+                    }
+                });
+            }
     </script>
 
 
