@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\LocationController;
+use App\Http\Controllers\PolygonMarkerController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SearchController;
 use Illuminate\Support\Facades\Route;
@@ -25,3 +27,9 @@ Route::resource('/categories',CategoryController::class);
 Route::get('/search',[SearchController::class,'search'])->name('search');
 
 Route::get('/getAllCategories', [CategoryController::class, 'getAllCategories'])->name('getAllCategories');
+
+Route::get('/polygon',[PolygonMarkerController::class,'index']);
+
+Route::get('/location',[LocationController::class,'index']);
+Route::get('/all-location',[LocationController::class,'allLocation']);
+Route::post('/post_location',[LocationController::class,'store'])->name('postLocation');
