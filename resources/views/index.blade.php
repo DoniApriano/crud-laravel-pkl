@@ -8,11 +8,14 @@
     <title>CRUD</title>
     <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css">
+
     <script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
-    <link href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css" rel="stylesheet">
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
@@ -84,7 +87,7 @@
 
             </div>
             <div class=" shadow p-3 rounded-3">
-                <table id="tbl_list" class="table table-borderless" cellspacing="0" width="100%">
+                <table id="tbl_list" class="table table-bordered table-hover" cellspacing="0" width="100%">
                     <thead>
                         <tr>
                             <th>No</th>
@@ -139,6 +142,8 @@
                     {
                         data: 'image',
                         name: 'image',
+                        orderable: false,
+                        searchable: false,
                         render: function(data, type, full, meta) {
                             return '<img src="' + `/storage/products/${data}` +
                                 '" alt="Product Image" width="100">';
@@ -200,24 +205,26 @@
         });
 
         function confirmDelete(event) {
-                event.preventDefault();
-                Swal.fire({
-                    title: 'Yakin?',
-                    text: 'Anda tidak dapat mengembalikan ini!',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Ya, hapus!',
-                    cancelButtonText: 'Batal'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        event.target.submit();
-                    }
-                });
-            }
+            event.preventDefault();
+            Swal.fire({
+                title: 'Yakin?',
+                text: 'Anda tidak dapat mengembalikan ini!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    event.target.submit();
+                }
+            });
+        }
     </script>
 
+    <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
 
 </body>
 

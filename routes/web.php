@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Route;
 //     return view('welcome');
 // });
 
-Route::resource('/products',ProductController::class);
+
 Route::resource('/categories',CategoryController::class);
 Route::get('/search',[SearchController::class,'search'])->name('search');
 
