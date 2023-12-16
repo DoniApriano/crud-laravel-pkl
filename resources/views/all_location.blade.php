@@ -27,6 +27,7 @@
         @foreach ($locations as $location)
             var marker{{ $location->id }} = L.marker([{{ $location->latitude }}, {{ $location->longitude }}]).addTo(
                 mymap);
+            marker{{ $location->id }}.bindPopup('<b>Location:</b> {{ $location->name }}<br><b>Latitude:</b> {{ $location->latitude }}<br><b>Longitude:</b> {{ $location->longitude }}');
             marker{{ $location->id }}.on('click', function() {
                 openLocationMap({{ $location->latitude }}, {{ $location->longitude }});
             });
