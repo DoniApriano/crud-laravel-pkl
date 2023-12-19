@@ -7,6 +7,7 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
 {
@@ -15,7 +16,7 @@ class ProductController extends Controller
         // $products = Product::get();
         $categories = Category::get();
         if (request()->ajax()) {
-            $products = Product::with('category')->get();
+            $products = Product::with('category')->latest()->get();
             return DataTables::of($products)
                 ->addColumn('category_name', function ($product) {
                     return $product->category->name;
@@ -27,55 +28,78 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
-        $this->validate($request, [
+        $validator = Validator::make($request->all(), [
             'image'     => 'required|image|mimes:jpg,png,jpeg,gif,svg|max:2048',
             'name'     => 'required|min:5',
             'stock'   => 'required|numeric',
             'category_id'   => 'required'
         ]);
 
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
         $image = $request->image;
         $image->storeAs('/public/products/', $image->hashName());
 
-        Product::create([
+        $product = Product::create([
             'image'     => $image->hashName(),
             'name'     => $request->name,
             'stock'   => $request->stock,
             'category_id'   => $request->category_id,
         ]);
 
-        return redirect()->route('products.index')->with('success', 'Berhasil tambah produk');
+        $productWithCategory = Product::with('category')->find($product->id);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Data Berhasil Disimpan!',
+            'data'    => $productWithCategory
+        ]);
     }
 
     public function update(Request $request, $id)
     {
-        $this->validate($request, [
-            'image'     => 'image|image|mimes:jpeg,png,jpg|max:2048',
-            'name'     => 'required|min:5',
-            'stock'   => 'required|numeric'
+        $validator = Validator::make($request->all(), [
+            'image_edit'     => 'image|mimes:jpg,png,jpeg,gif,svg|max:2048',
+            'name_edit'     => 'required|min:5',
+            'stock_edit'   => 'required|numeric',
+            'category_id_edit'   => 'required'
         ]);
 
-        $post = Product::findOrFail($id);
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
 
-        if ($request->hasFile('image')) {
-            $image = $request->image;
+        $product = Product::with('category')->findOrFail($id);
+
+        if ($request->hasFile('image_edit')) {
+            $image = $request->image_edit;
             $image->storeAs('/public/products/' . $image->hashName());
 
-            Storage::delete('/public/products/' . $post->image);
+            Storage::delete('/public/products/' . $product->image);
 
-            $post->update([
+            $product->update([
                 'image'     => $image->hashName(),
-                'name'     => $request->name,
-                'stock'   => $request->stock,
+                'name'     => $request->name_edit,
+                'stock'   => $request->stock_edit,
+                'category_id'   => $request->category_id_edit,
             ]);
         } else {
-            $post->update([
-                'name'     => $request->name,
-                'stock'   => $request->stock,
+            $product->update([
+                'name'     => $request->name_edit,
+                'stock'   => $request->stock_edit,
+                'category_id'   => $request->category_id_edit,
             ]);
         }
 
-        return redirect()->route('products.index')->with('success', 'Berhasil update data');
+        $product->load('category');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Data Berhasil Diudapte!',
+            'data'    => $product
+        ]);
     }
 
     public function edit($id)
@@ -95,6 +119,22 @@ class ProductController extends Controller
 
         $product->delete();
 
-        return redirect()->route('products.index');
+        return response()->json([
+            'success' => true,
+            'message' => 'Berhasil hapus',
+        ]);
+    }
+
+    public function show($id)
+    {
+        $product = Product::with('category')->find($id);
+        $categories = Category::all();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Detail Data Post',
+            'data'    => $product,
+            'categories' => $categories,
+        ]);
     }
 }

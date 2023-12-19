@@ -4,15 +4,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>CRUD</title>
     <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css">
+
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css">
 
     <script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
 
@@ -25,66 +26,8 @@
         <hr>
         <div class="row justify-content-center">
             <div class=" shadow p-3 rounded-3 mb-3">
-                <form action="{{ route('products.store') }}" method="post" enctype="multipart/form-data">
-                    @csrf
-
-                    <div class="mb-3">
-                        <label for="formFile" class="form-label">Gambar Produk</label>
-                        <input class="form-control" value="{{ old('image') }}" name="image" type="file"
-                            accept="image/*" id="formFile">
-                        @error('image')
-                            <div class="alert alert-danger mt-2">
-                                {{ $message }}
-                            </div>
-                        @enderror
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="name" class="form-label">Nama Produk</label>
-                        <input type="text" value="{{ old('name') }}" name="name" class="form-control"
-                            id="name" placeholder="Nama Produk">
-                        @error('name')
-                            <div class="alert alert-danger mt-2">
-                                {{ $message }}
-                            </div>
-                        @enderror
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="stock" class="form-label">Stok Produk</label>
-                        <input type="text" value="{{ old('stock') }}" name="stock" class="form-control"
-                            pattern="[0-9]+" title="Harus berupa angka" id="stock" placeholder="Stok Produk"
-                            oninput="this.value = this.value.replace(/[^0-9]/g, '');">
-                        @error('stock')
-                            <div class="alert alert-danger mt-2">
-                                {{ $message }}
-                            </div>
-                        @enderror
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="categoryDropdown" class="form-label">Kategori</label>
-                        <select name="category_id" class="form-select" id="categoryDropdown">
-                            <option value="" selected>Pilih Kategori</option>
-                            @foreach ($categories as $category)
-                                <option value="{{ $category->id }}"
-                                    {{ old('category_id') == $category->id ? 'selected' : '' }}>
-                                    {{ $category->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('category_id')
-                            <div class="alert alert-danger mt-2">
-                                {{ $message }}
-                            </div>
-                        @enderror
-                    </div>
-
-                    <div class="mb-3">
-                        <button type="submit" class="btn btn-success">Simpan</button>
-                    </div>
-                </form>
-
+                <a href="javascript:void(0)" class="btn btn-success mb-2" id="btn-open-modal-input">TAMBAH</a>
+                @include('modal_input')
             </div>
             <div class=" shadow p-3 rounded-3">
                 <table id="tbl_list" class="table table-bordered table-hover" cellspacing="0" width="100%">
@@ -98,39 +41,87 @@
                             <th>Aksi</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="tbl_products">
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
-    <script src="{{ asset('js/bootstrap.min.js') }}"></script>
+    @include('modal_edit')
+    @include('delete')
+
     <script>
-        $(document).ready(function() {
-            $('#categoryDropdown').select2({
-                placeholder: 'Pilih Kategori',
-                ajax: {
-                    url: '{{ route('getAllCategories') }}',
-                    dataType: 'json',
-                    delay: 250,
-                    processResults: function(data) {
-                        return {
-                            results: data
-                        };
-                    },
-                    cache: true
+        // Memunculkan Modal input
+        $('body').on('click', '#btn-open-modal-input', function() {
+            //open modal
+            $('#modal_input').modal('show');
+        });
+
+        $('body').on('click', '#btn_edit_product', function() {
+            //id
+            let product_id = $(this).data('id');
+            console.log(product_id);
+
+            $.ajax({
+                url: `/products/${product_id}`,
+                type: "GET",
+                cache: false,
+                success: function(response) {
+                    console.log(response);
+                    //fill data to form
+                    $('#product_id').val(response.data.id);
+                    $('#name_edit').val(response.data.name);
+                    $('#stock_edit').val(response.data.stock);
+                    $('#gambar').val(response.data.image);
+                    $('#product_image_preview').attr('src', `/storage/products/${response.data.image}`);
+                    $('#category_id_edit').empty();
+
+                    // Menambahkan Default option pada select category
+                    $('#category_id_edit').append('<option value="" selected>Pilih Kategori</option>');
+
+                    // Menambahkan option-option pada category
+                    response.categories.forEach(category => {
+                        let isSelected = category.id == response.data.category_id ? 'selected' :
+                            '';
+                        let option =
+                            `<option value="${category.id}" ${isSelected}>${category.name}</option>`;
+                        $('#category_id_edit').append(option);
+                    });
+
+                    //open modal
+                    $('#modal_edit').modal('show');
                 }
             });
         });
-    </script>
 
+        /**
+         * Dropdown search tapi belum bisa kalau pakai modal
+         */
+        // $('#categoryDropdown').select2({
+        //     placeholder: 'Pilih Kategori',
+        //     ajax: {
+        //         url: '{{ route('getAllCategories') }}',
+        //         dataType: 'json',
+        //         delay: 250,
+        //         processResults: function(data) {
+        //             return {
+        //                 results: data
+        //             };
+        //         },
+        //         cache: true
+        //     }
+        // });
 
-    <script>
+        // DataTable
         $(document).ready(function() {
             $('#tbl_list').DataTable({
                 processing: true,
                 serverSide: true,
                 ajax: '{{ route('products.index') }}',
+                createdRow: function(row, data, dataIndex) {
+                    // Menambahkan ID ke elemen <tr>
+                    $(row).attr('id', 'index_' + data.id);
+                },
                 columns: [{
                         data: null,
                         orderable: false,
@@ -166,28 +157,14 @@
                         orderable: false,
                         searchable: false,
                         render: function(data, type, full, meta) {
-                            var editUrl = '{{ route('products.edit', ':id') }}'.replace(':id', full
-                                .id);
-                            var deleteUrl = '{{ route('products.destroy', ':id') }}'.replace(':id',
-                                full.id);
-
-                            return '<div class="row">' +
-                                '<div class="col-md-3">' +
-                                '<a href="' + editUrl +
-                                '" class="btn btn-success btn-edit m-1">Ubah</a>' +
-                                '</div>' +
-                                '<div class="col-md-3">' +
-                                '<form class="delete-form" onsubmit="confirmDelete(event)"' +
-                                ' action="' + deleteUrl + '" method="post">' +
-                                '@csrf' +
-                                '@method('DELETE')' +
-                                '<button type="submit" class="btn btn-danger m-1 btn-delete">Hapus</button>' +
-                                '</form>' +
-                                '</div>' +
-                                '</div>';
-
+                            return '<a href="javascript:void(0)" id="btn_edit_product" data-id="' +
+                                full.id + '" class="btn btn-primary btn-sm">EDIT</a> ' +
+                                '<a href="javascript:void(0)" id="btn_delete_product" data-id="' +
+                                full
+                                .id + '" class="btn btn-danger btn-sm">DELETE</a>';
                         }
                     }
+
                 ]
             });
 
@@ -225,6 +202,7 @@
 
     <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
+    <script src="{{ asset('js/bootstrap.min.js') }}"></script>
 
 </body>
 
