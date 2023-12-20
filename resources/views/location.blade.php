@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>CRUD</title>
     <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('leaflet/leaflet.css') }}" />
@@ -27,12 +28,12 @@
             @csrf
             <div class="mb-3">
                 <label for="" class="form-label">Latitude</label>
-                <input class="form-control" name="latitude"  type="text" id="latitude" required>
+                <input class="form-control" name="latitude" type="text" id="latitude" required>
                 <div class="alert alert-danger mt-2 d-none" role="alert" id="alert-latitude"></div>
             </div>
             <div class="mb-3">
                 <label for="" class="form-label">Longitude</label>
-                <input class="form-control" name="longitude"  type="text" id="longitude" required>
+                <input class="form-control" name="longitude" type="text" id="longitude" required>
                 <div class="alert alert-danger mt-2 d-none" role="alert" id="alert-longitude"></div>
             </div>
 
@@ -53,6 +54,7 @@
                             <th>Latitude</th>
                             <th>Longitude</th>
                             <th>Maps</th>
+                            <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -64,7 +66,123 @@
 
     </div>
 
+    @include('modal_location')
+    @include('delete_location')
+
     <script>
+        $('#modal_edit').on('shown.bs.modal', function(e) {
+            var locationId = $('#location_form_edit input[name="location_id"]').val();
+
+            $.ajax({
+                url: '/location/' + locationId,
+                type: 'GET',
+                success: function(response) {
+                    var latitude = response.data.latitude;
+                    var longitude = response.data.longitude;
+
+                    // Update form fields
+                    $('#latitude_edit').val(latitude);
+                    $('#longitude_edit').val(longitude);
+
+                    // Clear existing markers on the modal map
+
+                    function addMarkerToMap(map, lat, lng) {
+                        return L.marker([lat, lng]).addTo(map);
+                    }
+
+                    var map_edit = L.map('map_edit').setView([latitude, longitude], 30);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {}).addTo(
+                        map_edit);
+
+                    map_edit.eachLayer(function(layer) {
+                        if (layer instanceof L.Marker) {
+                            map_edit.removeLayer(layer);
+                        }
+                    });
+
+                    var marker = addMarkerToMap(map_edit, latitude, longitude);
+
+                    var drawnItems = new L.FeatureGroup();
+                    map_edit.addLayer(drawnItems);
+
+                    var drawControl = new L.Control.Draw({
+                        draw: {
+                            polygon: true,
+                            marker: true,
+                            circle: true,
+                            polyline: true,
+                            rectangle: true
+                        },
+                        edit: {
+                            featureGroup: drawnItems
+                        }
+                    });
+
+                    map_edit.addControl(drawControl);
+                    map_edit.on('draw:created', function(e) {
+                        var layer = e.layer;
+                        var coords;
+                        var array = [];
+
+                        if (layer instanceof L.Polygon || layer instanceof L.Polyline) {
+                            coords = layer.getLatLngs()[0];
+                            console.log('poly', coords);
+                        } else if (layer instanceof L.Marker || layer instanceof L.Circle ||
+                            layer instanceof L.Rectangle) {
+                            coords = layer.getLatLng();
+                            array.push(coords);
+                            console.log('oth', coords);
+                            console.log('array = ', array);
+                            document.getElementById('latitude_edit').value = coords.lat;
+                            document.getElementById('longitude_edit').value = coords.lng;
+
+                            // Hapus marker lama jika ada
+                            map_edit.eachLayer(function(existingLayer) {
+                                if (existingLayer instanceof L.Marker) {
+                                    map_edit.removeLayer(existingLayer);
+                                }
+                            });
+
+                            map_edit.addLayer(layer);
+
+                            // Set Map View dari map edit
+                            function setMapView(map, lat, lng) {
+                                map.setView([lat, lng], 30);
+                            }
+                            setMapView(map_edit, coords.lat, coords.lng);
+                        }
+                    });
+
+                },
+                error: function(error) {
+                    console.error('Error fetching location data:', error);
+                }
+            });
+        });
+
+        // Modal Edit
+        $('body').on('click', '#btn_edit_location', function() {
+            //id
+            let location_id = $(this).data('id');
+            console.log(location_id);
+
+            $.ajax({
+                url: `/location/${location_id}`,
+                type: "GET",
+                cache: false,
+                success: function(response) {
+                    console.log(response);
+                    //fill data to form
+                    $('#location_id').val(response.data.id);
+                    $('#latitude_edit').val(response.data.latitude);
+                    $('#longitude_edit').val(response.data.longitude);
+
+                    //open modal
+                    $('#modal_edit').modal('show');
+                }
+            });
+        });
+
         // Input
         $('#submitBtn').on('click', function() {
             var formData = $('#locationForm').serialize();
@@ -139,6 +257,18 @@
                             return '<div id="map_' + row.id +
                                 '" class="minimap" style="height: 200px; width: 200px;"></div>';
                         }
+                    },
+                    {
+                        data: null,
+                        orderable: false,
+                        searchable: false,
+                        render: function(data, type, full, meta) {
+                            return '<a href="javascript:void(0)" id="btn_edit_location" data-id="' +
+                                full.id + '" class="btn btn-primary btn-sm">EDIT</a> ' +
+                                '<a href="javascript:void(0)" id="btn_delete_location" data-id="' +
+                                full
+                                .id + '" class="btn btn-danger btn-sm">DELETE</a>';
+                        }
                     }
                 ],
                 drawCallback: function(settings) {
@@ -206,6 +336,7 @@
             drawnItems.addLayer(layer);
         });
     </script>
+    <script src="{{ asset('js/bootstrap.min.js') }}"></script>
 </body>
 
 </html>

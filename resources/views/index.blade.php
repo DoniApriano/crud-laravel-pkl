@@ -48,7 +48,7 @@
         </div>
     </div>
     @include('modal_edit')
-    @include('delete')
+    @include('delete_product')
 
     <script>
         // Memunculkan Modal input

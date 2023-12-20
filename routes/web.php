@@ -32,5 +32,7 @@ Route::get('/polygon',[PolygonMarkerController::class,'index']);
 
 Route::get('/location',[LocationController::class,'index'])->name('location');
 Route::get('/all-location',[LocationController::class,'allLocation']);
-Route::post('/post-location',[LocationController::class,'store'])->name('postLocation');
-Route::post('/update-location/{id}',[LocationController::class,'update'])->name('updateLocation');
+Route::post('/location',[LocationController::class,'store'])->name('postLocation');
+Route::post('/location/{id}',[LocationController::class,'update'])->name('updateLocation');
+Route::delete('/location/{id}',[LocationController::class,'destroy'])->name('destroyLocation');
+Route::get('/location/{id}',[LocationController::class,'show'])->name('showLocation');

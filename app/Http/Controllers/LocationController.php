@@ -35,23 +35,70 @@ class LocationController extends Controller
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
-        
+
         $latitude = $request->input('latitude');
         $longitude = $request->input('longitude');
 
-        $lokasi = Location::create([
+        $location = Location::create([
             'latitude' => $latitude,
             'longitude' => $longitude
         ]);
 
-        if ($lokasi) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Data Berhasil Disimpan!',
-                'data'    => $lokasi
-            ]);
-        } else {
-            return redirect()->back()->with('error', 'Koordinat gagal disimpan!');
+        return response()->json([
+            'success' => true,
+            'message' => 'Data Berhasil Disimpan!',
+            'data'    => $location
+        ]);
+    }
+
+
+    public function show($id)
+    {
+        $location = Location::findOrFail($id);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Data Berhasil Disimpan!',
+            'data'    => $location
+        ]);
+    }
+
+    public function destroy($id)
+    {
+        $location = Location::findOrFail($id);
+        $location->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Data Berhasil Dihapus!',
+        ]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'latitude_edit' => 'required|numeric',
+            'longitude_edit' => 'required|numeric',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
         }
+
+        $latitude = $request->input('latitude_edit');
+        $longitude = $request->input('longitude_edit');
+
+        $location = Location::findOrFail($id);
+
+        $location->update([
+            'latitude' => $latitude,
+            'longitude' => $longitude
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Data Berhasil Ubah!',
+            'data'    => $location
+        ]);
     }
 }
