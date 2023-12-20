@@ -62,11 +62,7 @@
 
         // Membuat objek FormData
         let formData = new FormData();
-        if (imageInput) {
-            formData.append('image_edit', imageInput);
-        } else {
-            formData.append('image_edit', $('#product_image_preview').attr('src'));
-        }
+        formData.append('image_edit', imageInput);
         formData.append('image_edit', imageInput);
         formData.append('name_edit', $('#name_edit').val());
         formData.append('stock_edit', $('#stock_edit').val());

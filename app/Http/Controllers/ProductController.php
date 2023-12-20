@@ -61,7 +61,7 @@ class ProductController extends Controller
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'image_edit'     => 'image|mimes:jpg,png,jpeg,gif,svg|max:2048',
+            'image_edit' => $request->hasFile('image_edit') ? 'image|mimes:jpg,png,jpeg,gif,svg|max:2048' : '',
             'name_edit'     => 'required|min:5',
             'stock_edit'   => 'required|numeric',
             'category_id_edit'   => 'required'

@@ -11,44 +11,33 @@
     <script src="{{ asset('leaflet/leaflet.js') }}"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css" />
     <script src="https://unpkg.com/leaflet-draw"></script>
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css">
+    <script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body>
     <div class="container">
-        @if (Session::has('success'))
-            <div class="alert alert-primary" role="alert">
-                A simple primary alert—check it out!
-            </div>
-        @elseif(Session::has('error'))
-            <div class="alert alert-danger" role="alert">
-                A simple primary alert—check it out!
-            </div>
-        @endif
-
-        <form action="{{ route('postLocation') }}" method="post" enctype="multipart/form-data">
+        <form id="locationForm" method="post" enctype="multipart/form-data">
             @csrf
-
             <div class="mb-3">
                 <label for="" class="form-label">Latitude</label>
-                <input class="form-control" name="latitude" type="text" id="latitude">
-                @error('latitude')
-                    <div class="alert alert-danger mt-2">
-                        {{ $message }}
-                    </div>
-                @enderror
+                <input class="form-control" name="latitude"  type="text" id="latitude" required>
+                <div class="alert alert-danger mt-2 d-none" role="alert" id="alert-latitude"></div>
             </div>
             <div class="mb-3">
                 <label for="" class="form-label">Longitude</label>
-                <input class="form-control" name="longitude" type="text" id="longitude">
-                @error('longitude')
-                    <div class="alert alert-danger mt-2">
-                        {{ $message }}
-                    </div>
-                @enderror
+                <input class="form-control" name="longitude"  type="text" id="longitude" required>
+                <div class="alert alert-danger mt-2 d-none" role="alert" id="alert-longitude"></div>
             </div>
 
             <div class="mb-3">
-                <button type="submit" class="btn btn-success">Simpan</button>
+                <button type="button" class="btn btn-success" id="submitBtn">Simpan</button>
             </div>
         </form>
 
@@ -57,33 +46,16 @@
         <div class="my-3">
             <h3>Data Lokasi</h3>
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table id="tbl_locations" class="table table-hover">
                     <thead>
                         <tr>
+                            <th>No</th>
                             <th>Latitude</th>
                             <th>Longitude</th>
                             <th>Maps</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($locations as $location)
-                            <tr>
-                                <td>{{ $location->latitude }}</td>
-                                <td>{{ $location->longitude }}</td>
-                                <td>
-                                    <div id="map_{{ $location->id }}" class="minimap"
-                                        style="height: 200px; width: 200px;"></div>
-                                    <script>
-                                        var map_{{ $location->id }} = L.map('map_{{ $location->id }}').setView([{{ $location->latitude }},
-                                            {{ $location->longitude }}
-                                        ], 20);
-                                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                                        }).addTo(map_{{ $location->id }});
-                                        L.marker([{{ $location->latitude }}, {{ $location->longitude }}]).addTo(map_{{ $location->id }});
-                                    </script>
-                                </td>
-                            </tr>
-                        @endforeach
                     </tbody>
                 </table>
             </div>
@@ -93,10 +65,101 @@
     </div>
 
     <script>
+        // Input
+        $('#submitBtn').on('click', function() {
+            var formData = $('#locationForm').serialize();
+
+            $.ajax({
+                url: '{{ route('postLocation') }}',
+                type: 'POST',
+                data: formData,
+                success: function(response) {
+                    // Handle success, e.g., show a success message
+                    console.log(response);
+
+                    // Clear form fields
+                    $('#latitude').val('');
+                    $('#longitude').val('');
+
+                    Swal.fire({
+                        type: 'success',
+                        icon: 'success',
+                        title: `${response.message}`,
+                        showConfirmButton: false,
+                        timer: 3000
+                    });
+
+                    // Reload DataTable
+                    $('#tbl_locations').DataTable().ajax.reload();
+                },
+                error: function(error) {
+                    if (error.responseJSON.latitude) {
+                        $('#alert-latitude').removeClass('d-none');
+                        $('#alert-latitude').addClass('d-block');
+                        $('#alert-latitude').html(error.responseJSON.latitude);
+                    }
+
+                    if (error.responseJSON.longitude) {
+                        $('#alert-longitude').removeClass('d-none');
+                        $('#alert-longitude').addClass('d-block');
+                        $('#alert-longitude').html(error.responseJSON.longitude);
+                    }
+                }
+            });
+        });
+
+        // datatable locations
+        $(document).ready(function() {
+            $('#tbl_locations').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: '{{ route('location') }}',
+                    type: 'GET',
+                },
+                columns: [{
+                        data: null,
+                        orderable: false,
+                        searchable: false,
+                        render: function(data, type, full, meta) {
+                            return meta.row + 1;
+                        }
+                    },
+                    {
+                        data: 'latitude',
+                        name: 'latitude'
+                    },
+                    {
+                        data: 'longitude',
+                        name: 'longitude'
+                    },
+                    {
+                        data: null,
+                        render: function(data, type, row) {
+                            return '<div id="map_' + row.id +
+                                '" class="minimap" style="height: 200px; width: 200px;"></div>';
+                        }
+                    }
+                ],
+                drawCallback: function(settings) {
+                    var api = this.api();
+                    api.rows().every(function() {
+                        var data = this.data();
+                        var mapId = 'map_' + data.id;
+
+                        var rowMap = L.map(mapId).setView([data.latitude, data.longitude], 30);
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {})
+                            .addTo(rowMap);
+
+                        L.marker([data.latitude, data.longitude]).addTo(rowMap);
+                    });
+                }
+            });
+        });
+
         var mymap = L.map('map').setView([-7.554749321826491, 110.80869023600576], 20);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        }).addTo(mymap);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {}).addTo(mymap);
 
         // Menambahkan kontrol Leaflet Draw
         var drawnItems = new L.FeatureGroup();
@@ -115,6 +178,10 @@
             }
         });
 
+        $('#submitBtn').on('click', function() {
+            drawnItems.clearLayers();
+        });
+
         mymap.addControl(drawControl);
 
         mymap.on('draw:created', function(e) {
@@ -126,21 +193,18 @@
 
             if (layer instanceof L.Polygon || layer instanceof L.Polyline) {
                 coords = layer.getLatLngs()[0]
-                alert(JSON.stringify(coords))
-                console.log('poly',coords)
+                console.log('poly', coords)
             } else if (layer instanceof L.Marker || layer instanceof L.Circle || layer instanceof L.Rectangle) {
                 coords = layer.getLatLng()
                 array.push(coords)
-                console.log('oth',coords)
-                console.log('array = ',array)
-                alert(JSON.stringify(array))
+                console.log('oth', coords)
+                console.log('array = ', array)
                 document.getElementById('latitude').value = layer.getLatLng().lat;
                 document.getElementById('longitude').value = layer.getLatLng().lng;
             }
 
             drawnItems.addLayer(layer);
         });
-
     </script>
 </body>
 
