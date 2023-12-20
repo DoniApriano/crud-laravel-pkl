@@ -88,35 +88,9 @@
                 });
 
                 console.log(response);
-
-                // Menghitung jumlah baris yang sudah ada
-                let rowCount = $('#tbl_products tbody tr').length;
-
-                // Menambahkan 1 untuk mendapatkan nomor urut yang baru
-                let rowNumber = rowCount - 0 + 1;
-
-                // Membuat baris HTML baru dengan nomor urut
-                let product = `
-                            <tr id="index_${response.data.id}">
-                                <td>${rowNumber}</td>
-                                <td><img src="/storage/products/${response.data.image}" alt="Product Image" width="100"></td>
-                                <td>${response.data.name}</td>
-                                <td>${response.data.stock}</td>
-                                <td>${response.data.category.name}</td>
-                                <td >
-                                    <a href="javascript:void(0)" id="btn_edit_product" data-id="${response.data.id}" class="btn btn-primary btn-sm">EDIT</a>
-                                    <a href="javascript:void(0)" id="btn_delete_product" data-id="${response.data.id}" class="btn btn-danger btn-sm">DELETE</a>
-                                </td>
-                            </tr>
-                        `;
-
-                //append to table
-                $('#tbl_products').prepend(product);
+                
                 // reload tabel
                 $('#tbl_list').DataTable().ajax.reload();
-                $('#tbl_products tbody tr').each(function(index) {
-                    $(this).find('td:first').text(index + 1);
-                });
 
                 // Tutup
                 $('#modal_input').modal('hide');
