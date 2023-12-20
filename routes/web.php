@@ -32,4 +32,5 @@ Route::get('/polygon',[PolygonMarkerController::class,'index']);
 
 Route::get('/location',[LocationController::class,'index'])->name('location');
 Route::get('/all-location',[LocationController::class,'allLocation']);
-Route::post('/post_location',[LocationController::class,'store'])->name('postLocation');
+Route::post('/post-location',[LocationController::class,'store'])->name('postLocation');
+Route::post('/update-location/{id}',[LocationController::class,'update'])->name('updateLocation');

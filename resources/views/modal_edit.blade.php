@@ -62,8 +62,11 @@
 
         // Membuat objek FormData
         let formData = new FormData();
-        formData.append('image_edit', imageInput);
-        formData.append('image_edit', imageInput);
+        if (imageInput) {
+            formData.append('image_edit', imageInput);
+        } else {
+            formData.append('image_edit', ''); // Or provide a default value if needed
+        }
         formData.append('name_edit', $('#name_edit').val());
         formData.append('stock_edit', $('#stock_edit').val());
         formData.append('category_id_edit', $('#category_id_edit').val());
@@ -90,38 +93,7 @@
                     timer: 3000
                 });
 
-                console.log('formData:', formData);
-                console.log(response);
-
-                let rowCount = $('#tbl_products tbody tr').length;
-
-                // Menambahkan 1 untuk mendapatkan nomor urut yang baru
-                let rowNumber = rowCount + 1;
-
-                // Membuat baris HTML baru dengan nomor urut
-                let product = `
-                            <tr id="index_${response.data.id}" data-id="${response.data.id}">
-                                <td>${rowNumber}</td>
-                                <td><img src="/storage/products/${response.data.image}" alt="Product Image" width="100"></td>
-                                <td>${response.data.name}</td>
-                                <td>${response.data.stock}</td>
-                                <td>${response.data.category.name}</td>
-                                <td >
-                                    <a href="javascript:void(0)" id="btn_edit_product" data-id="${response.data.id}" class="btn btn-primary btn-sm">EDIT</a>
-                                    <a href="javascript:void(0)" id="btn_delete_product" data-id="${response.data.id}" class="btn btn-danger btn-sm">DELETE</a>
-                                </td>
-                            </tr>
-                        `;
-
-                // Cari rownya di tabel
-                let existingRow = $(`#tbl_products tbody tr[data-id="${response.data.id}"]`);
-
-                if (existingRow.length) {
-                    // repleace
-                    existingRow.replaceWith(product);
-                } else {
-                    $('#tbl_products tbody').append(product);
-                }
+                $('#image_edit').val('');
 
                 // Close modal
                 $('#modal_edit').modal('hide');
